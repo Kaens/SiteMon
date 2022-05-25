@@ -1,0 +1,19 @@
+SiteMon changelog
+
+v1.2
+  + Base script-independent Tk GUI-based Xpath testing app added
+    (* required 3rd-party library: requests_html)
+  Base script's version stays at v1.1.
+
+v1.1
+  - Removed the no-JS version since you can just not request JS in the JS version for it to behave the same way
+  + CLI option added to wait for a keypress before closing
+    (* requires pip install keyboard)
+  + Retries option added for the page downloader tweaking
+  + CLI option added for the now-optional SSL verification
+  * Default UserAgent updated
+  * Clarified default file locations a bit for Linux-style (but still untested)
+
+v1.0
+  Initial release, definitely compatible with Python 3.10.4.
+  (* required 3rd-party libraries: keyboard, requests_html)
