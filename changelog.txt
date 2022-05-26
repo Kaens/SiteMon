@@ -1,4 +1,12 @@
-SiteMon changelog
+﻿SiteMon changelog
+
+v1.3
+  * Error quits also respect --pause now
+  * Fixed the -vv page writeout error
+  * Exception prompts do better than say "occurred at (4)" and such
+  * A regex continuity now holds the first match instead of a simple boolean tracking any change, so you can see what that change was
+  * Clarified the explanation for both Types in the ini example
+  * -u/--update → -f/--force
 
 v1.2
   + Base script-independent Tk GUI-based Xpath testing app added
@@ -10,7 +18,7 @@ v1.1
   + CLI option added to wait for a keypress before closing
     (* requires pip install keyboard)
   + Retries option added for the page downloader tweaking
-  + CLI option added for the now-optional SSL verification
+  + Option added for the now-optional SSL verification
   * Default UserAgent updated
   * Clarified default file locations a bit for Linux-style (but still untested)
 

@@ -1,0 +1,8 @@
+misc/*
+pack.bat
+Sitemon*.7z
+*.exe
+*.txt
+*.json
+*.ini
+!sitemon.ini.example

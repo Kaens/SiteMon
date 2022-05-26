@@ -29,8 +29,7 @@ Referer =
 VerifySSL = no
 
 #Types can be "xpath" or "regex".
-# - With xpath, the element is directly compared to its older version.
-# - With regex, what's stored is the amount of hits on the page, and the change is monitored.
+# The first matched element is compared to its older version.
 Type = xpath
 # If in doubt, try to "Copy full Xpath" in your browser's Inspector, paste here. But normally, there are better ways.
 # in this case, this should track the DeFleMask for Windows' version

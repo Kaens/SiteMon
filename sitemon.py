@@ -26,11 +26,10 @@ Feedback: @kaens at Telegram
 
 
 TODO:
-  - make regex make a bit more sense, like save the first hit or something
   - defer the pre-parsing to BeautifulSoup because who knows how broken the tracked pages are
 """
 
-SiteMonVersion = "1.1"
+SiteMonVersion = "1.3"
 
 import argparse, re, os, json, struct, sys, keyboard, warnings
 from datetime import datetime, timedelta
@@ -52,14 +51,19 @@ def main():
     optp.add_argument('-c','--config', dest='ConfFile',action='store',metavar='X',help=f"an ini file with the settings (default: {ConfFN})")
     optp.add_argument('-C','--continuity', dest='ContFile',action='store',metavar='X',help=f"a JSON continuity file (default: {ContFN})")
     optp.add_argument('-r','--report', dest='ReportFile',action='store',metavar='X',help=f'the report file (default: {ReportFN}), \"nul\" for console-only')
-    optp.add_argument('-u','--update', dest='U',action='store_true',help="check all pages regardless of the Frequency setting")
-    optp.add_argument('-t','--retries',dest='Retries',type=int,metavar='N',help="how many retries to do downloading the pages, -1 for infinite (default: 3)")
+    optp.add_argument('-f','--force', dest='F',action='store_true',help="force re-check all pages")
+    optp.add_argument('-t','--retries',dest='Retries',type=int,metavar='N',help="do N retries downloading a page, -1 for infinite (default: 3)")
     optp.add_argument('-p','--pause',dest='Pause',action='store_true',help="waits for a keypress before closing")
     optp.add_argument('-s','--sslcheck',dest='VerifySSL',action='store_true',help="perform SSL issue check (default: no checks)")
     optp.add_argument('-v','--verbose', dest='V',action='count',default=0,help="verbose console output (multiple allowed)")
     optp.add_argument('-q','--quiet', dest='Q',action='count',default=0,help="no console output, overrides --verbose (multiple allowed)")
     #process arguments, optionally show help and quit:
     o = optp.parse_args()
+
+    def AnyKey():
+        if o.Pause:
+            a = keyboard.read_key()
+
     if o.V>1 and o.Q==0:
         print(o)
     #set up the config filename
@@ -69,6 +73,7 @@ def main():
     if not os.path.exists(ConfFN):
         if o.Q==0:
             print('Copy the sitemon.ini.example to sitemon.ini, and make adjustments using the sample settings')
+        AnyKey()
         return(1)
 
     # ---- load the ini file (but the commmand line takes priority) ---
@@ -88,7 +93,8 @@ def main():
     except Exception as e:
         if o.Q==0:
             print("Exception occurred: "+str(e))
-        return(1)
+        AnyKey()
+        return(2)
 
     # --- override the ini file values (separate because it's outside of "try")
     if o.ContFile:
@@ -115,8 +121,9 @@ def main():
             print("The continuity file was not found and will be created.")
     except Exception as e:
         if o.Q==0:
-            print("Exception occurred: "+str(e))
-        return(2)
+            print(f"Exception loading continuity: {str(e)}")
+        AnyKey()
+        return(3)
 
     # ---- init a browser session----
 
@@ -148,20 +155,21 @@ def main():
             URL = conf.get(Page,'URL')
         except:
             if o.V>0 and o.Q==0:
-                print(f"{Page}'s URL parameter invalid, skipping...")
+                print(f"{Page}: URL parameter invalid, skipping...")
             continue
 
         try:
             JS = conf.getboolean(Page,'JS')
         except:
             JS = False
-        if not o.VerifySSL:
+        if o.VerifySSL:
+            VerifySSL = True
+        else:
             try:
                 VerifySSL = conf.getboolean(Page,'VerifySSL')
             except:
                 VerifySSL = False
-        else:
-            VerifySSL = True
+            
         if VerifySSL:
             warnings.filterwarnings("default")
         else:
@@ -171,21 +179,32 @@ def main():
         except:
             Referer = ''
 
-        Type = conf.get(Page,'Type').lower()
+        try:
+            Type = conf.get(Page,'Type').lower()
+        except Exception as e:
+            if o.V>0 and o.Q==0:
+                print(f"{Page}: {str(e)}, skipping...")
+                continue
         if Type not in ('xpath','regex'):
             if o.V>0 and o.Q==0:
-                print(f"{Page}'s type parameter invalid, skipping...")
+                print(f"{Page}: Type parameter invalid, skipping...")
                 continue
 
         Search = conf.get(Page,'Search')
 
-        if not o.U: # the following only applies if we're not force updating
-            Frequency = conf.get(Page,'Frequency')
+        if not o.F: # the following only applies if we're not force updating
+            try:
+                Frequency = conf.get(Page,'Frequency')
+            except Excception as e:
+                if o.V>0 and o.Q==0:
+                    print(f"{Page}: {str(e)}, skipping...")
+                    continue
+
             try:
                 Frequency = int(Frequency)
             except:
                 if o.V>0 and o.Q==0:
-                    print(f"{Page}'s Frequency parameter invalid, using 1 minute")
+                    print(f"{Page}: Frequency parameter invalid, using 1 minute")
                 Frequency = 1
             if Frequency <= 0:
                 DTcmp = datetime.fromisoformat('9999-12-31')
@@ -209,7 +228,7 @@ def main():
         # ---- if it's time to check again: ----
         try:
             if o.V>0 and o.Q==0:
-                print(f'Reading up the "{Page}" page...')
+                print(f'Downloading the "{Page}" page...')
 
             session.headers['User-Agent'] = UserAgent
             if Referer != '':
@@ -219,10 +238,10 @@ def main():
                 r.html.render() # executes the js
             if o.V>1 and o.Q==0:
                 print(f'Saving the page to {Page}.html...')
-                open(f'{Page}.html','w',encoding='utf-8').write(res.text)
+                open(f'{Page}.html','w',encoding='utf-8').write(r.text)
         except Exception as e:
             if o.Q==0:
-                print(f"Exception occurred at (4): {str(e)}. Moving on...")
+                print(f"Exception downloading {Page}: {str(e)}. Moving on...")
             del e
             continue
 
@@ -239,14 +258,14 @@ def main():
             elif Type == "regex":
                 rf = re.findall(Search,r.text)
                 if rf:
-                    Element = len(rf)
+                    Element = rf[0] #first found element
                 else:
                     Element = 0
             if o.V>1 and o.Q==0:
                 print(f'The element is {Element}')
         except Exception as e:
             if o.Q==0:
-                print(f"Exception occurred at (5): {str(e)}. Moving on...")
+                print(f"Exception parsing {Page}: {str(e)}. Moving on...")
             del e
             continue
 
@@ -279,8 +298,9 @@ def main():
         json.dump(H,open(ContFN,'w',encoding='utf-8-sig'),indent=2)
     except Exception as e:
         if o.Q==0:
-            print("Exception occurred at (3): "+str(e))
-        return(3)
+            print(f"Exception saving continuity: {str(e)}")
+        AnyKey()
+        return(4)
 
     if o.Q==0:
         if len(UpdatedPages)==0:
@@ -292,8 +312,9 @@ def main():
         open(ReportFN,'a',encoding="utf-8").write('\n'.join(f"{a[0]} {a[1]}" for a in UpdatedPages))
     except Exception as e:
         if o.Q==0:
-            print("Exception occurred at (6): "+str(e))
-        return(6)
+            print(f"Exception saving report file: {str(e)}")
+        AnyKey()
+        return(5)
 
     #print the updates to stdout
     if o.Q<2:
@@ -302,8 +323,7 @@ def main():
     if o.V>0 and o.Q==0:
         print('All done.')
 
-    if o.Pause:
-        a = keyboard.read_key()
+    AnyKey()
 
 
 if __name__=="__main__":
