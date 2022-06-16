@@ -9,8 +9,8 @@ ReportFile = ./sitemon.report.txt
 # Put -1 for infinite retries. 
 Retries = 3
 
-# Optional, defaults to Microsoft Edge Version 101.0.1210.53 win-x64 official
-UserAgent = Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53
+# Optional, defaults to Microsoft Edge Version 102.0.1245.41 win-x64 official
+UserAgent = Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.41
 #ini chapter names here, also used throughout the script's output.
 Pages = deflemask, python
 
@@ -28,7 +28,7 @@ Referer =
 #Verify the secure connection for issues. Optional, defaults to no.
 VerifySSL = no
 
-#Types can be "xpath" or "regex".
+#Types can be "css", "xpath" or "regex".
 # The first matched element is compared to its older version.
 Type = xpath
 # If in doubt, try to "Copy full Xpath" in your browser's Inspector, paste here. But normally, there are better ways.
@@ -38,6 +38,12 @@ Search = //div[contains(@class,'upload_name')]
 # In minutes (integer), <=0 for never.
 # 60 is 1 h, 1440 is 1 d, 10080 is 1 w
 Frequency = 1
+
+[sunvox]
+URL = https://warmplace.ru/soft/sunvox/
+Type = css
+Search = div.title_version
+Frequency = 10000
 
 [python]
 URL = https://www.python.org/downloads/

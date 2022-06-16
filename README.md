@@ -1,6 +1,6 @@
 # SiteMon
 SiteMon tracks changes in site contents as set up in the ini file, using Xpath or regex.
-JS is supported. Passworded pages and browser cookies are not, yet. Definitely works on Python 3.10.4.
+JS is supported. Passworded pages and browser cookies are not, yet. Definitely works on Python 3.10.5.
 
 As output, it sends to stdout the space-separated list of "pages" that changed, as well as adds them to a report file with timestamps.
 

@@ -20,7 +20,7 @@ You need to run the following prior to using the script:
   pip3 install requests_html
 
 Conceived for personal use by Kaens Bard, 2022
-Made and tested with CPython v3.10.4 win-x64.
+Made and tested with CPython v3.10.5 win-x64.
 
 Feedback: @kaens at Telegram
 
@@ -29,7 +29,7 @@ TODO:
   - defer the pre-parsing to BeautifulSoup because who knows how broken the tracked pages are
 """
 
-SiteMonVersion = "1.3"
+SiteMonVersion = "1.4"
 
 import argparse, re, os, json, struct, sys, keyboard, warnings
 from datetime import datetime, timedelta
@@ -185,7 +185,7 @@ def main():
             if o.V>0 and o.Q==0:
                 print(f"{Page}: {str(e)}, skipping...")
                 continue
-        if Type not in ('xpath','regex'):
+        if Type not in ('css','xpath','regex'):
             if o.V>0 and o.Q==0:
                 print(f"{Page}: Type parameter invalid, skipping...")
                 continue
@@ -241,28 +241,41 @@ def main():
                 open(f'{Page}.html','w',encoding='utf-8').write(r.text)
         except Exception as e:
             if o.Q==0:
-                print(f"Exception downloading {Page}: {str(e)}. Moving on...")
+                print(f"Exception downloading {Page}: {str(e)}. Check your system proxy if this keeps failing. Moving on...")
             del e
             continue
 
         # ---- if url load succeeded: ----
         try:
             if o.V>0 and o.Q==0:
-                print(f'Picking the requested element...')
+                print('Picking the requested element...')
             if o.V>1 and o.Q==0:
                 print(f'The search is {Search}')
+            if Type == "css":
+                RawElement = r.html.find(Search, first=True) #first found element
+                if RawElement: 
+                    Element = RawElement.text
+                else:
+                    Element = 0
             if Type == "xpath":
                 RawElement = r.html.xpath(Search)
                 if RawElement:
-                    Element = RawElement[0].text
+                    Element = RawElement[0].text #first found element
+                else:
+                    Element = 0
             elif Type == "regex":
                 rf = re.findall(Search,r.text)
                 if rf:
                     Element = rf[0] #first found element
                 else:
                     Element = 0
+            else: #not or half-implemented stuff goes here!
+                Element = 0
             if o.V>1 and o.Q==0:
-                print(f'The element is {Element}')
+                if Element != None:
+                    print(f'The element is {Element}')
+                else:
+                    print(f'Element not found')
         except Exception as e:
             if o.Q==0:
                 print(f"Exception parsing {Page}: {str(e)}. Moving on...")
