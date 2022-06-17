@@ -1,5 +1,13 @@
 # SiteMon changelog
 
+## v1.5
+
+##### Major:
+
+  * Attribute (like "href") tracking added
+  * Multiple consecutive matches can now be saved to continuity (yes, you can grab page links with this as `//a[contains(@href,'youtu']` or something like that)
+
+
 ## v1.4
 
 #### Major:
