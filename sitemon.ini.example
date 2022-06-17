@@ -12,7 +12,7 @@ Retries = 3
 # Optional, defaults to Microsoft Edge Version 102.0.1245.41 win-x64 official
 UserAgent = Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.124 Safari/537.36 Edg/102.0.1245.41
 #ini chapter names here, also used throughout the script's output.
-Pages = deflemask, python
+Pages = deflemask, sunvox, python
 
 
 [deflemask]
@@ -31,25 +31,39 @@ VerifySSL = no
 #Types can be "css", "xpath" or "regex".
 # The first matched element is compared to its older version.
 Type = xpath
+
 # If in doubt, try to "Copy full Xpath" in your browser's Inspector, paste here. But normally, there are better ways.
 # in this case, this should track the DeFleMask for Windows' version
 Search = //div[contains(@class,'upload_name')]
+
+# Sometimes you need to track the changes in an element's attribute, not the text contents. If you specify the attribute name here, SiteMon will be keeping track on it instead. Optional, applies to CSS and Xpath modes because you can do that with RegEx anyway.
+#Attribute = href
+
+# In case the page has several update footprints, like the various independently updated versions of Python, you might want to keep track of a bunch of similar elements at once.
+# "Amount" gives you the option to tell up to how many search results to store in the continuity, starting from the very first element found.
+#Optional, defaults to 1 (and cannot be less). See [python] for an example, and play around with SelTest to see how it works.
+#Amount = 1
+
 # Frequency, to avoid badgering the sites too much, even if you loop the script every second.
 # In minutes (integer), <=0 for never.
 # 60 is 1 h, 1440 is 1 d, 10080 is 1 w
 Frequency = 1
 
 [sunvox]
+#This will return something like "sunvox-2.0e.zip"
 URL = https://warmplace.ru/soft/sunvox/
 Type = css
-Search = div.title_version
+Search = a.download_link
+Attr = href
 Frequency = 10000
 
 [python]
+#This will return something like "Python 3.10.5 Python 3.10.5... 3.9.13 ... 3.10.4 ... 3.9.12"
 URL = https://www.python.org/downloads/
 JS = no
 Referer = https://www.python.org/
 IgnoreSSLIssues = no
 Type = regex
-Search = Download Python 3\.\d*\.\d*
+Search = Python 3\.\d*\.\d*
+Amount = 8
 Frequency = 10000

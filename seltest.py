@@ -24,6 +24,18 @@ warnings.filterwarnings("ignore")
 lasturl = ''
 renderclicked=False
 
+def DigitValidation(S):
+    if S.isdigit():
+        a = int(S)
+        if a>=0 and a<=500:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def min(a,b): return a if a<b else b
+
 def load(url):
     global _req
     global page
@@ -62,6 +74,7 @@ def performtest(url,sel):
 
     Element = None
     Type = SelType.get()
+    Attrib = Attr.get()
     if Type == 'xpath':
         try:
             Element = page.html.xpath(sel)
@@ -82,10 +95,17 @@ def performtest(url,sel):
             Element = None
     if Element:
         lsResult.delete("1.0",tk.END)
+        if IsMany.get():
+            Amount = min(int(Many.get()),len(Element))
+        else:
+            Amount = 1
         if Type == 're':
-            lsResult.insert(tk.END,Element[0])
+            lsResult.insert(tk.END,'\n'.join(Element[i] for i in range(Amount)))
         elif Type in ('xpath','css'):
-            lsResult.insert(tk.END,Element[0].text)
+            if Attrib == '':
+                lsResult.insert(tk.END,'\n'.join(Element[i].text for i in range(Amount)))
+            else:
+                lsResult.insert(tk.END,'\n'.join(Element[i].attrs[Attrib] for i in range(Amount)))
         Info.set(f"Found {len(Element)} item(s), displaying the first one")
     else:
         lsResult.delete("1.0",tk.END)
@@ -145,7 +165,10 @@ rt.rowconfigure(0,weight=1)
 ui = ttk.Frame(rt)
 ui.grid(column=0,row=0,sticky='news')
 ui.columnconfigure(0,weight=1)
-ui.rowconfigure(4,weight=1)#result
+ui.columnconfigure(1,weight=1)
+ui.columnconfigure(2,weight=1)
+ui.columnconfigure(3,weight=0)
+ui.rowconfigure(5,weight=1)#result
 
 URL = tk.StringVar()
 urlf = ttk.LabelFrame(ui,text='URL:')
@@ -175,8 +198,16 @@ tbSel = ttk.Entry(sf,textvariable=Sel,exportselection=0)
 Sel.set('/html/body')
 tbSel.grid(column=0,row=0,sticky='news')
 
+Attr = tk.StringVar()
+atf = ttk.LabelFrame(ui,text='Attribute if needed (ignored for RegEx):')
+atf.columnconfigure(0,weight=1)
+atf.grid(column=0,row=3,sticky='new')
+tbAttr = ttk.Entry(atf,textvariable=Attr,exportselection=0)
+Attr.set('')
+tbAttr.grid(column=0,row=0,sticky='news')
+
 btf = ttk.Frame(ui)
-btf.grid(column=0,row=3,sticky='new')
+btf.grid(column=0,row=4,sticky='new')
 btLoad = ttk.Button(btf,text='Load URL',command=btLoadCallback)
 btLoad.grid(column=0,row=0)
 btRenderJS = ttk.Button(btf,text='Render JS',command=btRenderJSCallback)
@@ -185,8 +216,18 @@ btRenderJS.grid(column=1,row=0)
 btRun = ttk.Button(btf,text='Run',command=btRunCallback)
 btRun.grid(column=0,row=1)
 
+IsMany = tk.IntVar()
+Many = tk.StringVar()
+cbMany = ttk.Checkbutton(btf,text='More results:',variable=IsMany)
+manyreg = ui.register(DigitValidation)
+tbMany = ttk.Entry(btf, textvariable=Many, exportselection=0, validate='key',validatecommand=(manyreg,'%P'))
+Many.set("5")
+cbMany.grid(column=2,row=1)
+tbMany.grid(column=3,row=1,sticky='e')
+
+
 resf = ttk.LabelFrame(ui,text='Result')
-resf.grid(column=0,row=4,sticky='news')
+resf.grid(column=0,row=5,sticky='news')
 resf.columnconfigure(0,weight=1)
 resf.rowconfigure(0,weight=1)
 if sys.platform in ('linux','linux2'):
@@ -201,14 +242,14 @@ lsResult = tk.Text(resf,bg='#000',fg='#ccc',selectbackground='#666',selectforegr
 lsResult.insert(tk.END,"Here the first element matching your selector will be shown."+
     "\nWhy not play around with selectors (with https://python.org as the playground) if you're new! Here are some suggestions:"+
     "\n CSS (https://waa.ai/csssel):\na\n#content\nul.sitemap>li:last-child li\n"+
-    "\n Xpath (https://devhints.io/xpath):\n//*[@id=\"content\"]\n//div[4]\n//button[text()=\"Downloads\"]\n"+
+    '\n Xpath (https://devhints.io/xpath):\n//*[@id="content"]\n//div[4]\n//button[text()="Downloads"]\n//a[contains(@href,\'http:\')] , set Attribute to "href" and More results to 10\n'+
     "\n Regex (https://waa.ai/pyregex):\nmeta.*>\n")
-lsResult.grid(column=0,row=0,sticky='news')
+lsResult.grid(column=0,row=5,sticky='news')
 
 Info = tk.StringVar()
 lbInfo = ttk.Label(ui,textvariable=Info,compound='text',background='#aaa')
 Info.set('Input your URL and selector. Run test.')
-lbInfo.grid(column=0,row=4,sticky='sew')
+lbInfo.grid(column=0,row=7,sticky='sew')
 
 _req = HTMLSession()
 _req.headers['User-Agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53"

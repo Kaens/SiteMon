@@ -10,7 +10,7 @@ that changed, as well as adds them to a report file with timestamps.
 Please run the script with "--help" and read the sample config file
 for more instructions.
 
-You can specify -v and -q several times (or like -vv -qq).
+You can specify -v and -q several times (or like -vvqq).
 
 The script renders JS using Chromium, so it will download Chromium
 to ~/.pyppeteer (or %LOCALAPPDATA%/pyppeteer/) on first JS request.
@@ -29,7 +29,7 @@ TODO:
   - defer the pre-parsing to BeautifulSoup because who knows how broken the tracked pages are
 """
 
-SiteMonVersion = "1.4"
+SiteMonVersion = "1.5"
 
 import argparse, re, os, json, struct, sys, keyboard, warnings
 from datetime import datetime, timedelta
@@ -38,12 +38,13 @@ from requests_html import HTMLSession
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
+def min(a,b): return a if a<b else b
+
 def main():
     ConfFN = './sitemon.ini'
     ContFN = './sitemon.json'
     ReportFN = './sitemon.report.txt'
     UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53"
-    Referer = ''
     H = {} # continuity, short for 'history'
     UpdatedPages = []
 
@@ -178,6 +179,20 @@ def main():
             Referer = conf.get(Page,'Referer')
         except:
             Referer = ''
+        try:
+            Attribute = conf.get(Page,'Attribute')
+        except:
+            Attribute = ''
+        try: #check for config errors, like the absence
+            Amount = conf.get(Page,'Amount')
+            try: #check for conversion errors in particular
+                Amount = int(Amount)
+            except:
+                Amount = 1
+            if Amount < 1: #check for sanity
+                Amount = 1
+        except:
+            Amount = 1
 
         try:
             Type = conf.get(Page,'Type').lower()
@@ -195,7 +210,7 @@ def main():
         if not o.F: # the following only applies if we're not force updating
             try:
                 Frequency = conf.get(Page,'Frequency')
-            except Excception as e:
+            except Exception as e:
                 if o.V>0 and o.Q==0:
                     print(f"{Page}: {str(e)}, skipping...")
                     continue
@@ -251,27 +266,28 @@ def main():
                 print('Picking the requested element...')
             if o.V>1 and o.Q==0:
                 print(f'The search is {Search}')
-            if Type == "css":
-                RawElement = r.html.find(Search, first=True) #first found element
-                if RawElement: 
-                    Element = RawElement.text
+            if Type in ("css","xpath"):
+                if Type == "css": # matching the CSS selector
+                    RawElements = r.html.find(Search)
+                elif Type == "xpath": # matching the Xpath
+                    RawElements = r.html.xpath(Search)    
+                if RawElements: # the further processing is identical
+                    Amount = min(Amount,len(RawElements))
+                    if Attribute == '':
+                        Element = '\n'.join(RawElements[i].text for i in range(Amount))
+                    else:
+                        Element = '\n'.join(RawElements[i].attrs[Attribute] for i in range(Amount))
                 else:
-                    Element = 0
-            if Type == "xpath":
-                RawElement = r.html.xpath(Search)
-                if RawElement:
-                    Element = RawElement[0].text #first found element
+                    Element = ''
+            elif Type == "regex": # matching the regular expression
+                RawElements = re.findall(Search,r.text)
+                if RawElements:
+                    Element = '\n'.join(RawElements[i] for i in range(min(Amount,len(RawElements))))
                 else:
-                    Element = 0
-            elif Type == "regex":
-                rf = re.findall(Search,r.text)
-                if rf:
-                    Element = rf[0] #first found element
-                else:
-                    Element = 0
-            else: #not or half-implemented stuff goes here!
-                Element = 0
-            if o.V>1 and o.Q==0:
+                    Element = ''
+            else: #nothing or some very half-implemented stuff goes here!
+                Element = ''
+            if o.V>0 and o.Q==0:
                 if Element != None:
                     print(f'The element is {Element}')
                 else:
