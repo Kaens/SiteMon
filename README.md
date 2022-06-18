@@ -13,11 +13,18 @@ For CPython:
     python3 -m pip install --upgrade pip
     python3 -m pip install keyboard requests_html
 
-For PyPy 3.9 on Windows, things are currently much more complicated because [Christopher Gohlke's lxml builds](http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml) are only up to 3.8, and requests_html requires those. So you have to install MSVS14+ and libxml2 first, which requires... a solid gitwalk, but if you're persistent then start from looking at the error messages:
+For PyPy 3.9 (works faster):
+
+If you're working with Windows, you'll want to install `lxml` from the corresponding wheel first.
+
+Now, a `pp39` wheel for `lxml`... does not exist. Trying to do `pip install lxml` makes pip plop halfway. I built mine for w64, [here](https://github.com/Kaens/SiteMon/releases/download/v1.5/lxml-4.9.0-pp39-pypy39_pp73-win_amd64.whl) (SHA1 = 7f6ca65ad4d6a268777e5c3e594afccc968447d2 :: [malware-free](https://www.virustotal.com/gui/file-analysis/OTk5Zjk1OGQ4YmE5ODM0ZjAwMDk0ZTM5MmQzYzc5YmI6MTY1NTU4NzMyMg==)). Download the file, run cmd.exe in your Download folder, then finally install the prerequisites:
 
     pypy3 -m ensurepip
     pypy3 -m pip install --upgrade pip
+    pypy3 -m pip install lxml-4.9.0-pp39-pypy39_pp73-win_amd64.whl
     pypy3 -m pip install keyboard requests_html
+
+If it breaks, I hope there's an official binary for py39 by then...
 
 ## Options
 ```

@@ -135,7 +135,6 @@ def btRenderJSCallback():
     if renderclicked:
         Info.set('Attempting to render the page...')
         try:
-
             page.html.render()
         except Exception as e:
             Info.set(f"Render exception: {str(e)}")

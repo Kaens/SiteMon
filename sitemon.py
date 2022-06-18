@@ -2,7 +2,7 @@
 
 """
 SiteMon tracks changes in specific DOM elements on the sites
-as set up in the ini file, rendering the JS in them first*.
+as set up in the ini file, rendering the JS in them first.*
 
 As output, it outputs to stdout the space-separated list of "pages"
 that changed, as well as adds them to a report file with timestamps.
@@ -25,7 +25,6 @@ For PyPy,
   pypy3 -m ensurepip
   pypy3 -m pip install --upgrade pip
   pypy3 -m pip install keyboard requests_html
-
 
 Conceived for personal use by Kaens Bard, 2022
 Made and tested with CPython v3.10.5 win-x64. Tested on PyPy v3.9 win-x64.
