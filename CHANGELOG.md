@@ -1,5 +1,15 @@
 # SiteMon changelog
 
+## v1.5 bugfixes in ini.example, SelTest
+
+#### Minor:
+  * Fixed the [python] example in the ini.example
+  * Fixed the render option and the match amount status bar info in seltest.py
+  * Tested on PyPy 3.9 too, setup instructions updated
+  * Readme improved
+  * A useless to-do retracted for SiteMon
+
+
 ## v1.5
 
 ##### Major:

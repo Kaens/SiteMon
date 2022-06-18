@@ -11,7 +11,7 @@ You need to run the following prior to using the script:
   pip3 install requests_html
 
 Conceived for personal use by Kaens Bard, 2022
-Made and tested with CPython v3.10.5 win-x64.
+Made and tested with CPython v3.10.5 win-x64. Tested on PyPy v3.9 win-x64.
 
 Feedback: @kaens at Telegram
 """
@@ -106,7 +106,7 @@ def performtest(url,sel):
                 lsResult.insert(tk.END,'\n'.join(Element[i].text for i in range(Amount)))
             else:
                 lsResult.insert(tk.END,'\n'.join(Element[i].attrs[Attrib] for i in range(Amount)))
-        Info.set(f"Found {len(Element)} item(s), displaying the first one")
+        Info.set(f"Found {len(Element)} item(s), displaying the first {Amount}")
     else:
         lsResult.delete("1.0",tk.END)
         Info.set("Can't find it")
@@ -123,7 +123,7 @@ def btLoadCallback():
     btRun.state = tk.NORMAL
 
 def btRenderJSCallback():
-    global _req, renderclicked
+    global page, renderclicked
     btLoad.state = tk.DISABLED
     btRenderJS.state = tk.DISABLED
     btRun.state = tk.DISABLED
@@ -135,10 +135,13 @@ def btRenderJSCallback():
     if renderclicked:
         Info.set('Attempting to render the page...')
         try:
-            _req.render()
+
+            page.html.render()
         except Exception as e:
             Info.set(f"Render exception: {str(e)}")
             del e
+        else:
+            Info.set("JS rendered. Run the test again.")
     btLoad.state = tk.NORMAL
     btRenderJS.state = tk.NORMAL
     btRun.state = tk.NORMAL

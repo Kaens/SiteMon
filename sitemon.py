@@ -2,7 +2,7 @@
 
 """
 SiteMon tracks changes in specific DOM elements on the sites
-as set up in the ini file, rendering the JS in them first.
+as set up in the ini file, rendering the JS in them first*.
 
 As output, it outputs to stdout the space-separated list of "pages"
 that changed, as well as adds them to a report file with timestamps.
@@ -12,21 +12,25 @@ for more instructions.
 
 You can specify -v and -q several times (or like -vvqq).
 
-The script renders JS using Chromium, so it will download Chromium
-to ~/.pyppeteer (or %LOCALAPPDATA%/pyppeteer/) on first JS request.
+(* The script renders JS using Chromium, so it will download Chromium
+to ~/.pyppeteer (or %LOCALAPPDATA%/pyppeteer/) on first JS request.)
 
 You need to run the following prior to using the script:
-  pip3 install keyboard
-  pip3 install requests_html
+For CPython,
+  python3 -m ensurepip
+  python3 -m pip install --upgrade pip
+  pip3 install keyboard requests_html
+
+For PyPy,
+  pypy3 -m ensurepip
+  pypy3 -m pip install --upgrade pip
+  pypy3 -m pip install keyboard requests_html
+
 
 Conceived for personal use by Kaens Bard, 2022
-Made and tested with CPython v3.10.5 win-x64.
+Made and tested with CPython v3.10.5 win-x64. Tested on PyPy v3.9 win-x64.
 
 Feedback: @kaens at Telegram
-
-
-TODO:
-  - defer the pre-parsing to BeautifulSoup because who knows how broken the tracked pages are
 """
 
 SiteMonVersion = "1.5"

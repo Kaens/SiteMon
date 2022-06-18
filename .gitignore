@@ -1,8 +1,6 @@
-misc/*
-pack.bat
-Sitemon*.7z
-*.exe
-*.txt
-*.json
-*.ini
+/**
+!sitemon.py
+!seltest.py
 !sitemon.ini.example
+!README.md
+!CHANGELOG.md
