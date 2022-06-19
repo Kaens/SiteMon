@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# Change the following to your liking (but it'll be gone with the update~)
+DefaultURL = r"https://python.org"
+DefaultSel = r"/html/body"
+DefaultAttr = ""
+MaxResults = 20000
+
 """
 SelTest is a Tk GUI app where you can quickly and easily test out
 your element selector.
@@ -27,7 +33,7 @@ renderclicked=False
 def DigitValidation(S):
     if S.isdigit():
         a = int(S)
-        if a>=0 and a<=500:
+        if a >= 0 and a <= MaxResults:
             return True
         else:
             return False
@@ -37,9 +43,7 @@ def DigitValidation(S):
 def min(a,b): return a if a<b else b
 
 def load(url):
-    global _req
-    global page
-    global lasturl
+    global _req, page, lasturl
     warnings.filterwarnings("ignore")
     try:
         page = _req.get(url,verify=False)
@@ -106,7 +110,11 @@ def performtest(url,sel):
                 lsResult.insert(tk.END,'\n'.join(Element[i].text for i in range(Amount)))
             else:
                 lsResult.insert(tk.END,'\n'.join(Element[i].attrs[Attrib] for i in range(Amount)))
-        Info.set(f"Found {len(Element)} item(s), displaying the first {Amount}")
+        if len(Element)>Amount:
+            Info.set(f"Found {len(Element)} item(s), displaying the first {Amount}")
+        else:
+            Info.set(f"Found {len(Element)} item(s)")
+
     else:
         lsResult.delete("1.0",tk.END)
         Info.set("Can't find it")
@@ -166,10 +174,8 @@ rt.rowconfigure(0,weight=1)
 
 ui = ttk.Frame(rt)
 ui.grid(column=0,row=0,sticky='news')
+ui.rowconfigure(0,weight=0)
 ui.columnconfigure(0,weight=1)
-ui.columnconfigure(1,weight=1)
-ui.columnconfigure(2,weight=1)
-ui.columnconfigure(3,weight=0)
 ui.rowconfigure(5,weight=1)#result
 
 URL = tk.StringVar()
@@ -177,7 +183,7 @@ urlf = ttk.LabelFrame(ui,text='URL:')
 urlf.columnconfigure(0,weight=1)
 urlf.grid(column=0,row=0,sticky='new')
 tbURL = ttk.Entry(urlf,textvariable=URL,exportselection=0)
-URL.set('https://python.org')
+URL.set(DefaultURL)
 tbURL.grid(column=0,row=0,sticky='news')
 tbURL.focus()
 
@@ -197,7 +203,7 @@ sf = ttk.LabelFrame(ui,text='Selector:')
 sf.columnconfigure(0,weight=1)
 sf.grid(column=0,row=2,sticky='new')
 tbSel = ttk.Entry(sf,textvariable=Sel,exportselection=0)
-Sel.set('/html/body')
+Sel.set(DefaultSel)
 tbSel.grid(column=0,row=0,sticky='news')
 
 Attr = tk.StringVar()
@@ -205,18 +211,21 @@ atf = ttk.LabelFrame(ui,text='Attribute if needed (ignored for RegEx):')
 atf.columnconfigure(0,weight=1)
 atf.grid(column=0,row=3,sticky='new')
 tbAttr = ttk.Entry(atf,textvariable=Attr,exportselection=0)
-Attr.set('')
+Attr.set(DefaultAttr)
 tbAttr.grid(column=0,row=0,sticky='news')
 
 btf = ttk.Frame(ui)
+btf.columnconfigure(0,weight=1)
+btf.columnconfigure(1,weight=1)
+btf.columnconfigure(2,weight=1)
 btf.grid(column=0,row=4,sticky='new')
 btLoad = ttk.Button(btf,text='Load URL',command=btLoadCallback)
-btLoad.grid(column=0,row=0)
+btLoad.grid(column=0,row=0,sticky='we')
 btRenderJS = ttk.Button(btf,text='Render JS',command=btRenderJSCallback)
-btRenderJS.grid(column=1,row=0)
+btRenderJS.grid(column=1,row=0,sticky='we')
 
 btRun = ttk.Button(btf,text='Run',command=btRunCallback)
-btRun.grid(column=0,row=1)
+btRun.grid(column=0,row=1,sticky='we')
 
 IsMany = tk.IntVar()
 Many = tk.StringVar()
@@ -246,7 +255,7 @@ lsResult.insert(tk.END,"Here the first element matching your selector will be sh
     "\n CSS (https://waa.ai/csssel):\na\n#content\nul.sitemap>li:last-child li\n"+
     '\n Xpath (https://devhints.io/xpath):\n//*[@id="content"]\n//div[4]\n//button[text()="Downloads"]\n//a[contains(@href,\'http:\')] , set Attribute to "href" and More results to 10\n'+
     "\n Regex (https://waa.ai/pyregex):\nmeta.*>\n")
-lsResult.grid(column=0,row=5,sticky='news')
+lsResult.grid(column=0,row=0,sticky='news')
 
 Info = tk.StringVar()
 lbInfo = ttk.Label(ui,textvariable=Info,compound='text',background='#aaa')
