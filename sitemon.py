@@ -32,7 +32,7 @@ Made and tested with CPython v3.10.5 win-x64. Tested on PyPy v3.9 win-x64.
 Feedback: @kaens at Telegram
 """
 
-SiteMonVersion = "1.5"
+SiteMonVersion = "1.5.1"
 
 import argparse, re, os, json, struct, sys, keyboard, warnings
 from datetime import datetime, timedelta
@@ -340,6 +340,13 @@ def main():
         else:
             if ReportFN.lower() != 'nul':
                 print(f'Saving the list of updated pages to {ReportFN}...')
+            try:
+                from plyer import notification
+                notification.notify(title="SiteMon",
+                    message="Updated pages:\n"+'\n'.join(f"{a[0]}" for a in UpdatedPages),
+                    app_name="SiteMon.py")
+            except:
+                pass
     try:
         open(ReportFN,'a',encoding="utf-8").write('\n'.join(f"{a[0]} {a[1]}" for a in UpdatedPages))
     except Exception as e:

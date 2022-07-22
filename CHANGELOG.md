@@ -1,5 +1,10 @@
 # SiteMon changelog
 
+## v1.5.1
+
+#### Minor:
+  * Added the system notification (`pip install plyer` to make use of this)
+
 ## v1.5 bugfixes in ini.example, SelTest
 
 #### Minor:
