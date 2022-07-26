@@ -338,8 +338,6 @@ def main():
         if len(UpdatedPages)==0:
             print(f'No updates.')
         else:
-            if ReportFN.lower() != 'nul':
-                print(f'Saving the list of updated pages to {ReportFN}...')
             try:
                 from plyer import notification
                 notification.notify(title="SiteMon",
@@ -347,6 +345,8 @@ def main():
                     app_name="SiteMon.py")
             except:
                 pass
+            if ReportFN.lower() != 'nul':
+                print(f'Saving the list of updated pages to {ReportFN}...')
     try:
         open(ReportFN,'a',encoding="utf-8").write('\n'.join(f"{a[0]} {a[1]}" for a in UpdatedPages))
     except Exception as e:
